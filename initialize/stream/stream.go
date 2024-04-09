@@ -42,6 +42,5 @@ func FetchStream(jwt string, orgID string) {
 	defer resp.Body.Close()
 
 	fmt.Println("Stream started...")
-	// 这里只打印状态码作为示例，你可以根据需要处理响应体
 	fmt.Println("Response status:", resp.Status)
 }

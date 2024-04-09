@@ -10,12 +10,10 @@ import (
 	"net/http"
 )
 
-// ChatCompletionRequest defines the structure of the request to /v1/chat/completions
 type ChatCompletionRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
-// Handler for /v1/chat/completions endpoint
 func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
 		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
@@ -51,8 +49,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(response) // Assuming response is of type []byte
-}
+	w.Write(response) 
 
 func main() {
 	http.HandleFunc("/v1/chat/completions", chatCompletionsHandler)
