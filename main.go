@@ -4,7 +4,6 @@ import (
 	"Groq2API/initialize/auth"
 	"Groq2API/initialize/stream"
 	"Groq2API/initialize/user"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -21,13 +20,24 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req ChatCompletionRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	//var req ChatCompletionRequest
+	//if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	//	http.Error(w, err.Error(), http.StatusBadRequest)
+	//	return
+	//}
+	reqHead := r.Header.Get("Authorization")
+	if !strings.HasPrefix(reqHead, "Bearer ") {
+		http.Error(w, "Only Bearer authorization header is supported", http.StatusUnauthorized)
+		return
+	}
+	//reqHead split
+	splitRes := strings.Split(reqHead, "Bearer ")
+	if len(splitRes) < 1 {
+		http.Error(w, "Failed to split request header", http.StatusBadRequest)
 		return
 	}
 
-	jwt, err := auth.FetchJWT(req.RefreshToken)
+	jwt, err := auth.FetchJWT(splitRes[1])
 	if err != nil {
 		log.Printf("Error fetching JWT: %v", err)
 		http.Error(w, "Failed to fetch JWT", http.StatusInternalServerError)
