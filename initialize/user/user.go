@@ -3,6 +3,7 @@ package user
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 )
 
@@ -22,7 +23,7 @@ func FetchUserProfile(jwt string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
+	log.Printf("jwt: %v", jwt)
 	req.Header.Set("Authorization", "Bearer "+jwt)
 
 	client := &http.Client{}
