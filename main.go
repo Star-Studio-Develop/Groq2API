@@ -2,8 +2,10 @@ package main
 
 import (
 	"Groq2API/initialize/auth"
+	"Groq2API/initialize/model"
 	"Groq2API/initialize/stream"
 	"Groq2API/initialize/user"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,7 +13,8 @@ import (
 )
 
 type ChatCompletionRequest struct {
-	RefreshToken string `json:"refresh_token"`
+	//RefreshToken string `json:"refresh_token"`
+	Messages []model.Message `json:"messages"`
 }
 
 func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
@@ -20,11 +23,11 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//var req ChatCompletionRequest
-	//if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-	//	http.Error(w, err.Error(), http.StatusBadRequest)
-	//	return
-	//}
+	var req ChatCompletionRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	reqHead := r.Header.Get("Authorization")
 	if !strings.HasPrefix(reqHead, "Bearer ") {
 		http.Error(w, "Only Bearer authorization header is supported", http.StatusUnauthorized)
@@ -51,7 +54,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := stream.FetchStream(jwt, orgID) // Make sure to adjust the FetchStream function to return the response instead of printing it.
+	response, err := stream.FetchStream(jwt, orgID, req.Messages) // Make sure to adjust the FetchStream function to return the response instead of printing it.
 	if err != nil {
 		log.Printf("Error fetching stream: %v", err)
 		http.Error(w, "Failed to fetch stream", http.StatusInternalServerError)
@@ -63,7 +66,11 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 	// 	fmt.Printf("Index: %d, Value: %s\n", i, s)
 	// }
 	log.Printf("Response: %v", response)
-	w.Write([]byte(strings.Join(response, "")))
+	_, err = w.Write([]byte(strings.Join(response, "")))
+	if err != nil {
+		log.Printf("Error when generate response: %v", err)
+		return
+	}
 }
 func main() {
 	http.HandleFunc("/v1/chat/completions", chatCompletionsHandler)

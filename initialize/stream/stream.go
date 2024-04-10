@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"Groq2API/initialize/model"
 	"bufio"
 	"bytes"
 	"encoding/json"
@@ -10,14 +11,11 @@ import (
 )
 
 // FetchStream 异步获取数据流
-func FetchStream(jwt string, orgID string) ([]string, error) {
+func FetchStream(jwt string, orgID string, messages []model.Message) ([]string, error) {
 	url := "https://api.groq.com/openai/v1/chat/completions"
 	payload := map[string]interface{}{
-		"model": "mixtral-8x7b-32768",
-		"messages": []map[string]string{
-			{"content": "Please try to provide useful, helpful and actionable answers.", "role": "system"},
-			{"content": "hi", "role": "user"},
-		},
+		"model":       "mixtral-8x7b-32768",
+		"messages":    messages,
 		"temperature": 0.2,
 		"max_tokens":  2048,
 		"top_p":       0.8,
