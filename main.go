@@ -14,7 +14,8 @@ import (
 
 type ChatCompletionRequest struct {
 	//RefreshToken string `json:"refresh_token"`
-	Messages []model.Message `json:"messages"`
+	Messages  []model.Message `json:"messages"`
+	ModelType string          `json:"model"`
 }
 
 func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +55,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := stream.FetchStream(jwt, orgID, req.Messages) // Make sure to adjust the FetchStream function to return the response instead of printing it.
+	response, err := stream.FetchStream(jwt, orgID, req.Messages, req.ModelType) // Make sure to adjust the FetchStream function to return the response instead of printing it.
 	if err != nil {
 		log.Printf("Error fetching stream: %v", err)
 		http.Error(w, "Failed to fetch stream", http.StatusInternalServerError)
