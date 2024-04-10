@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type ChatCompletionRequest struct {
@@ -46,11 +47,14 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to fetch stream", http.StatusInternalServerError)
 		return
 	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(response) 
-
+	// for i,s := range response {
+	// 	fmt.Printf("Index: %d, Value: %s\n", i, s)
+	// }
+	log.Printf("Response: %v", response)
+	w.Write([]byte(strings.Join(response, "")))
+}
 func main() {
 	http.HandleFunc("/v1/chat/completions", chatCompletionsHandler)
 

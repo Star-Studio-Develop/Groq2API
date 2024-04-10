@@ -1,14 +1,16 @@
 package stream
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
 
 // FetchStream 异步获取数据流
-func FetchStream(jwt string, orgID string) {
+func FetchStream(jwt string, orgID string) ([]string, error) {
 	url := "https://api.groq.com/openai/v1/chat/completions"
 	payload := map[string]interface{}{
 		"model": "mixtral-8x7b-32768",
@@ -26,7 +28,7 @@ func FetchStream(jwt string, orgID string) {
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
 	if err != nil {
 		fmt.Println("Error creating request:", err)
-		return
+		return nil, err
 	}
 
 	req.Header.Set("Authorization", "Bearer "+jwt)
@@ -37,10 +39,26 @@ func FetchStream(jwt string, orgID string) {
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Println("Error sending request:", err)
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	fmt.Println("Stream started...")
 	fmt.Println("Response status:", resp.Status)
+	var response []string
+	reader := bufio.NewReader(resp.Body)
+	for {
+		var line []byte
+		line, err = reader.ReadBytes('\n')
+		if err == io.EOF {
+			err = nil
+			break
+		}
+		if err != nil {
+			fmt.Println("Error while reading response:", err)
+		}
+		// log.Println(string(line))
+		response = append(response, string(line))
+	}
+	return response, err
 }
