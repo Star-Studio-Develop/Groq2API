@@ -2,16 +2,14 @@ package stream
 
 import (
 	"Groq2API/initialize/model"
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 )
 
 // FetchStream 异步获取数据流
-func FetchStream(jwt string, orgID string, messages []model.Message, modelType string) ([]string, error) {
+func FetchStream(jwt string, orgID string, messages []model.Message, modelType string) (*http.Response, error) {
 	url := "https://api.groq.com/openai/v1/chat/completions"
 	payload := map[string]interface{}{
 		"model":       modelType,
@@ -39,24 +37,8 @@ func FetchStream(jwt string, orgID string, messages []model.Message, modelType s
 		fmt.Println("Error sending request:", err)
 		return nil, err
 	}
-	defer resp.Body.Close()
+	//_ = resp.Body.Close()
+	_ = req.Body.Close()
 
-	fmt.Println("Stream started...")
-	fmt.Println("Response status:", resp.Status)
-	var response []string
-	reader := bufio.NewReader(resp.Body)
-	for {
-		var line []byte
-		line, err = reader.ReadBytes('\n')
-		if err == io.EOF {
-			err = nil
-			break
-		}
-		if err != nil {
-			fmt.Println("Error while reading response:", err)
-		}
-		// log.Println(string(line))
-		response = append(response, string(line))
-	}
-	return response, err
+	return resp, nil
 }

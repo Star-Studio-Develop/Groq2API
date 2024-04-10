@@ -7,6 +7,7 @@ import (
 	"Groq2API/initialize/user"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -61,17 +62,35 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to fetch stream", http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	// for i,s := range response {
-	// 	fmt.Printf("Index: %d, Value: %s\n", i, s)
-	// }
-	log.Printf("Response: %v", response)
-	_, err = w.Write([]byte(strings.Join(response, "")))
-	if err != nil {
-		log.Printf("Error when generate response: %v", err)
-		return
+
+	w.Header().Set("Content-Type", "text/event-stream")
+	w.Header().Set("Cache-Control", "no-cache")
+	w.Header().Set("Connection", "keep-alive")
+	w.Header().Set("Transfer-Encoding", "chunked")
+	w.Header().Set("X-Accel-Buffering", "no")
+	//w.WriteHeader(http.StatusOK)
+	buf := make([]byte, 4*1024)
+
+	for {
+		n, err := response.Body.Read(buf)
+		if n > 0 {
+			w.Write(buf[:n])
+		}
+
+		if err != nil {
+			if err == io.EOF {
+				w.WriteHeader(http.StatusOK)
+				err := response.Body.Close()
+				if err != nil {
+					log.Printf("Error close response: %v", err)
+					http.Error(w, "Failed to close response", http.StatusInternalServerError)
+					return
+				}
+			}
+			break
+		}
 	}
+
 }
 func main() {
 	http.HandleFunc("/v1/chat/completions", chatCompletionsHandler)
