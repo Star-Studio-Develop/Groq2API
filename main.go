@@ -1,16 +1,17 @@
 package main
 
 import (
-	"Groq2API/initialize/auth"
-	"Groq2API/initialize/model"
-	"Groq2API/initialize/stream"
-	"Groq2API/initialize/user"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strings"
+
+	"Groq2API/initialize/auth"
+	"Groq2API/initialize/model"
+	"Groq2API/initialize/stream"
+	"Groq2API/initialize/user"
 )
 
 type ChatCompletionRequest struct {
@@ -37,7 +38,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	//reqHead split
 	splitRes := strings.Split(reqHead, "Bearer ")
-	if len(splitRes) < 1 {
+	if len(splitRes) < 2 {
 		http.Error(w, "Failed to split request header", http.StatusBadRequest)
 		return
 	}
