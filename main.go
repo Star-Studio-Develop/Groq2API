@@ -38,7 +38,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	//reqHead split
 	splitRes := strings.Split(reqHead, "Bearer ")
-	if len(splitRes) < 1 {
+	if len(splitRes) < 2 {
 		http.Error(w, "Failed to split request header", http.StatusBadRequest)
 		return
 	}
