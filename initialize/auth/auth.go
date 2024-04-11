@@ -2,6 +2,7 @@ package auth
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"net/http"
 )
@@ -26,8 +27,11 @@ func FetchJWT(refreshToken string) (string, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("x-sdk-client", "eyJldmVudF9pZCI6ImV2ZW50LWlkLWNkOWRiYzUzLTIzOTQtNDgxNy1hOTNlLTBkYzBiODlhNmQxNiIsImFwcF9zZXNzaW9uX2lkIjoiYXBwLXNlc3Npb24taWQtMGNmYjkxYzktZTMyNi00MDUxLWI1YzUtMDI5NjY2NjM3NDYzIiwicGVyc2lzdGVudF9pZCI6InBlcnNpc3RlbnQtaWQtYjM2MzhjNDEtMjEzNi00Yjc1LTkxOTAtNDczYTAyZWE2M2Y5IiwiY2xpZW50X3NlbnRfYXQiOiIyMDI0LTA0LTEwVDA5OjI0OjIxLjYyM1oiLCJ0aW1lem9uZSI6IkFzaWEvU2hhbmdoYWkiLCJzdHl0Y2hfdXNlcl9pZCI6InVzZXItbGl2ZS1hNjYxZGJjZS0yMWVmLTRiZGMtYjZlNC0wZDNmMGVlODhhM2YiLCJzdHl0Y2hfc2Vzc2lvbl9pZCI6InNlc3Npb24tbGl2ZS1kMzliZmZhMi03YjU2LTQ5MDctOWMwYS00N2U1MGM4N2Y5NmEiLCJhcHAiOnsiaWRlbnRpZmllciI6Imdyb3EuY29tIn0sInNkayI6eyJpZGVudGlmaWVyIjoiU3R5dGNoLmpzIEphdmFzY3JpcHQgU0RLIiwidmVyc2lvbiI6IjQuNS4zIn19")
 	req.Header.Add("x-sdk-parent-host", "https://groq.com")
-
-	client := &http.Client{}
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err
