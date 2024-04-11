@@ -1,16 +1,17 @@
 package main
 
 import (
-	"Groq2API/initialize/auth"
-	"Groq2API/initialize/model"
-	"Groq2API/initialize/stream"
-	"Groq2API/initialize/user"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strings"
+
+	"Groq2API/initialize/auth"
+	"Groq2API/initialize/model"
+	"Groq2API/initialize/stream"
+	"Groq2API/initialize/user"
 )
 
 type ChatCompletionRequest struct {
