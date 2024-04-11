@@ -1,25 +1,21 @@
-FROM golang:alpine AS builder
+FROM golang:1.22 AS builder
 
-ARG CMD_PATH
-
-COPY go.mod /src/
-
-RUN cd /src && go env -w GOPROXY=https://goproxy.cn,direct && go mod download
-
-COPY . /src
-
-WORKDIR /src/${CMD_PATH}
-
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main main.go
-
-FROM debian:stable-slim
-
-ARG CMD_PATH
-
-COPY --from=builder /src/${CMD_PATH}/main /app/main
+ENV CGO_ENABLED=0
 
 WORKDIR /app
 
+COPY go.mod ./
+RUN go mod download
+
+COPY . .
+RUN go build -o /app/Groq2API .
+
+FROM alpine:latest
+
+WORKDIR /app
+
+COPY --from=builder /app/Groq2API /app/Groq2API
+
 EXPOSE 8080
 
-CMD ["./main"]
+CMD [ "./Groq2API" ]
