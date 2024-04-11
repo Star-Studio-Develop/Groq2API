@@ -28,3 +28,6 @@ curl --request POST \
 }'
 
 ```
+
+![image](https://github.com/Star-Studio-Develop/Groq2API/assets/148524140/adedf992-864a-47b1-9201-d53717befd4a)
+
