@@ -1,9 +1,9 @@
 package stream
 
 import (
-	"Groq2API/initialize/model"
 	"bytes"
 	"encoding/json"
+	"github.com/Star-Studio-Develop/Groq2API/initialize/model"
 	"github.com/rs/zerolog/log"
 	"net/http"
 )
