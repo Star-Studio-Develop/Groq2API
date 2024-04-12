@@ -52,14 +52,15 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jwt, err := auth.FetchJWT(splitRes[1])
+	refreshToken := splitRes[1]
+	jwt, err := auth.FetchJWT(refreshToken)
 	if err != nil {
 		log.Error().Err(err).Msg("Error fetching JWT: ")
 		http.Error(w, "Failed to fetch JWT", http.StatusInternalServerError)
 		return
 	}
 
-	orgID, err := user.FetchUserProfile(jwt)
+	orgID, err := user.FetchUserProfile(refreshToken, jwt)
 	if err != nil {
 		log.Error().Err(err).Msg("Error fetching user profile: ")
 		http.Error(w, "Failed to fetch user profile", http.StatusInternalServerError)

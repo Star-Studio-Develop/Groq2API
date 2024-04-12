@@ -3,6 +3,8 @@ package auth
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/Star-Studio-Develop/Groq2API/initialize/model"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
@@ -13,6 +15,13 @@ type TokenResponse struct {
 }
 
 func FetchJWT(refreshToken string) (string, error) {
+
+	if userCache, ok := model.GetUserCache(refreshToken); ok && userCache.JWT != "" {
+		log.Info().Msg("Using cached JWT")
+		return userCache.JWT, nil
+	}
+
+	log.Info().Msg("Fetching new JWT")
 	url := "https://web.stytch.com/sdk/v1/sessions/authenticate"
 	body := bytes.NewBuffer(nil)
 	req, err := http.NewRequest(http.MethodPost, url, body)
@@ -39,5 +48,7 @@ func FetchJWT(refreshToken string) (string, error) {
 		return "", err
 	}
 
+	model.SetJWT(refreshToken, tokenResp.Data.SessionJWT)
 	return tokenResp.Data.SessionJWT, nil
+
 }
