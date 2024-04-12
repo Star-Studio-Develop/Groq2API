@@ -3,7 +3,7 @@ package user
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
@@ -23,7 +23,7 @@ func FetchUserProfile(jwt string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	log.Printf("jwt: %v", jwt)
+	log.Info().Str("jwt", jwt).Msg("jwt token")
 	req.Header.Set("Authorization", "Bearer "+jwt)
 
 	client := &http.Client{}

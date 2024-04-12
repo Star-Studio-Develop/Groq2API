@@ -4,7 +4,7 @@ import (
 	"Groq2API/initialize/model"
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
@@ -23,7 +23,7 @@ func FetchStream(jwt string, orgID string, messages []model.Message, modelType s
 
 	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
 	if err != nil {
-		fmt.Println("Error creating request:", err)
+		log.Error().Err(err).Msg("Error creating request: ")
 		return nil, err
 	}
 
@@ -34,7 +34,7 @@ func FetchStream(jwt string, orgID string, messages []model.Message, modelType s
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error sending request:", err)
+		log.Error().Err(err).Msg("Error sending request: ")
 		return nil, err
 	}
 	//_ = resp.Body.Close()
