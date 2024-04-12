@@ -1,13 +1,13 @@
 package main
 
 import (
-	"Groq2API/initialize/auth"
-	"Groq2API/initialize/model"
-	"Groq2API/initialize/stream"
-	"Groq2API/initialize/user"
-	"Groq2API/initialize/utils"
 	"bytes"
 	"encoding/json"
+	"github.com/Star-Studio-Develop/Groq2API/initialize/auth"
+	"github.com/Star-Studio-Develop/Groq2API/initialize/model"
+	"github.com/Star-Studio-Develop/Groq2API/initialize/stream"
+	"github.com/Star-Studio-Develop/Groq2API/initialize/user"
+	"github.com/Star-Studio-Develop/Groq2API/initialize/utils"
 	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"

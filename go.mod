@@ -1,4 +1,4 @@
-module Groq2API
+module github.com/Star-Studio-Develop/Groq2API
 
 go 1.22.1
 
