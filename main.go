@@ -8,10 +8,12 @@ import (
 	"github.com/Star-Studio-Develop/Groq2API/initialize/stream"
 	"github.com/Star-Studio-Develop/Groq2API/initialize/user"
 	"github.com/Star-Studio-Develop/Groq2API/initialize/utils"
+	"github.com/patrickmn/go-cache"
 	"github.com/rs/zerolog/log"
 	"io"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type ChatCompletionRequest struct {
@@ -22,7 +24,10 @@ type ChatCompletionRequest struct {
 	MaxTokens int64           `json:"max_tokens"`
 }
 
-func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
+func chatCompletionsHandler(w http.ResponseWriter, r *http.Request, c *cache.Cache) {
+	var jwt string
+	var err error
+	var orgID string
 	if r.Method == "OPTIONS" {
 		utils.SetCorsHeaders(w)
 		// Respond with 204 No Content status code
@@ -36,7 +41,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req ChatCompletionRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err = json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -51,19 +56,33 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to split request header", http.StatusBadRequest)
 		return
 	}
+	tokenStr := splitRes[1]
 
-	jwt, err := auth.FetchJWT(splitRes[1])
-	if err != nil {
-		log.Error().Err(err).Msg("Error fetching JWT: ")
-		http.Error(w, "Failed to fetch JWT", http.StatusInternalServerError)
-		return
+	jwtItem, found := c.Get(tokenStr)
+	if found {
+		jwt = jwtItem.(string)
+	} else {
+		jwt, err = auth.FetchJWT(splitRes[1])
+		if err != nil {
+			log.Error().Err(err).Msg("Error fetching JWT: ")
+			http.Error(w, "Failed to fetch JWT", http.StatusInternalServerError)
+			return
+		}
+		c.Set(tokenStr, jwt, 4*time.Minute)
 	}
 
-	orgID, err := user.FetchUserProfile(jwt)
-	if err != nil {
-		log.Error().Err(err).Msg("Error fetching user profile: ")
-		http.Error(w, "Failed to fetch user profile", http.StatusInternalServerError)
-		return
+	orgIdItem, found := c.Get(tokenStr + ":orgId")
+	if found {
+		orgID = orgIdItem.(string)
+	} else {
+		orgID, err = user.FetchUserProfile(jwt)
+		if err != nil {
+			log.Error().Err(err).Msg("Error fetching user profile: ")
+			http.Error(w, "Failed to fetch user profile", http.StatusInternalServerError)
+			return
+		}
+		// 理论上access_token 对应的orgId是不会变的，所以可以一直缓存
+		c.Set(tokenStr+":orgId", orgID, 24*time.Hour)
 	}
 	var response *http.Response
 	if req.Stream {
@@ -74,7 +93,6 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to fetch stream", http.StatusInternalServerError)
 			return
 		}
-
 		w.Header().Set("Content-Type", "text/event-stream")
 	} else {
 		url := "https://api.groq.com/openai/v1/chat/completions"
@@ -107,7 +125,6 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Transfer-Encoding", "chunked")
 	w.Header().Set("X-Accel-Buffering", "no")
 	utils.SetCorsHeaders(w)
-	//w.WriteHeader(http.StatusOK)
 	buf := make([]byte, 4*1024)
 
 	for {
@@ -137,8 +154,13 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// Create a cache with a default expiration time of 4 minutes, and which
+	// purges expired items every 1 minutes
+	c := cache.New(4*time.Minute, 1*time.Minute)
 	http.HandleFunc("/", rootHandler)
-	http.HandleFunc("/v1/chat/completions", chatCompletionsHandler)
+	http.HandleFunc("/v1/chat/completions", func(w http.ResponseWriter, r *http.Request) {
+		chatCompletionsHandler(w, r, c)
+	})
 
 	log.Info().Msg("Server is listening on :8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
