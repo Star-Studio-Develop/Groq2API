@@ -125,7 +125,6 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request, c *cache.Cac
 	w.Header().Set("Transfer-Encoding", "chunked")
 	w.Header().Set("X-Accel-Buffering", "no")
 	utils.SetCorsHeaders(w)
-	w.WriteHeader(http.StatusOK)
 	buf := make([]byte, 4*1024)
 
 	for {
@@ -136,7 +135,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request, c *cache.Cac
 
 		if err != nil {
 			if err == io.EOF {
-				//w.WriteHeader(http.StatusOK)
+				w.WriteHeader(http.StatusOK)
 				err := response.Body.Close()
 				if err != nil {
 					log.Error().Err(err).Msg("Failed to close response")
@@ -155,8 +154,8 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// Create a cache with a default expiration time of 5 minutes, and which
-	// purges expired items every 10 minutes
+	// Create a cache with a default expiration time of 4 minutes, and which
+	// purges expired items every 1 minutes
 	c := cache.New(4*time.Minute, 1*time.Minute)
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/v1/chat/completions", func(w http.ResponseWriter, r *http.Request) {
