@@ -107,6 +107,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Transfer-Encoding", "chunked")
 	w.Header().Set("X-Accel-Buffering", "no")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	utils.SetCorsHeaders(w)
 	//w.WriteHeader(http.StatusOK)
 	buf := make([]byte, 4*1024)
