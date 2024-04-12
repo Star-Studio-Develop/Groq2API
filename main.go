@@ -6,6 +6,7 @@ import (
 	"Groq2API/initialize/stream"
 	"Groq2API/initialize/user"
 	"Groq2API/initialize/utils"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -18,6 +19,7 @@ type ChatCompletionRequest struct {
 	//RefreshToken string `json:"refresh_token"`
 	Messages  []model.Message `json:"messages"`
 	ModelType string          `json:"model"`
+	Stream    bool            `json:"stream"`
 }
 
 func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
@@ -63,15 +65,43 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to fetch user profile", http.StatusInternalServerError)
 		return
 	}
+	var response *http.Response
+	if req.Stream {
+		// while use stream
+		response, err = stream.FetchStream(jwt, orgID, req.Messages, req.ModelType) // Make sure to adjust the FetchStream function to return the response instead of printing it.
+		if err != nil {
+			log.Printf("Error fetching stream: %v", err)
+			http.Error(w, "Failed to fetch stream", http.StatusInternalServerError)
+			return
+		}
 
-	response, err := stream.FetchStream(jwt, orgID, req.Messages, req.ModelType) // Make sure to adjust the FetchStream function to return the response instead of printing it.
-	if err != nil {
-		log.Printf("Error fetching stream: %v", err)
-		http.Error(w, "Failed to fetch stream", http.StatusInternalServerError)
-		return
+		w.Header().Set("Content-Type", "text/event-stream")
+	} else {
+		url := "https://api.groq.com/openai/v1/chat/completions"
+		payload := map[string]interface{}{
+			"model":       req.ModelType,
+			"messages":    req.Messages,
+			"temperature": 0.2,
+			"max_tokens":  2048,
+			"top_p":       0.8,
+			"stream":      false,
+		}
+		body, _ := json.Marshal(payload)
+		req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
+		if err != nil {
+			fmt.Println("Error creating request:", err)
+			return
+		}
+		req.Header.Set("Authorization", "Bearer "+jwt)
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("groq-organization", orgID)
+		client := &http.Client{}
+		response, err = client.Do(req)
+		if err != nil {
+			fmt.Println("Error sending request:", err)
+			return
+		}
 	}
-
-	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Transfer-Encoding", "chunked")
