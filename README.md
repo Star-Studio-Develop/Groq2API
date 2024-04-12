@@ -23,7 +23,10 @@ docker run -d -p 8080:8080  ghcr.io/star-studio-develop/groq2api:latest
   - 4096 (llama2-70b-4096) 
   - 8192 (gemma-7b-it)
   - 32768 (mixtral-8x7b-32768)
-
+- `message`
+  - `role` 消息角色
+    - user
+    - assistant
 ```bash
 
 curl --request POST \
