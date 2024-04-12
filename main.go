@@ -133,7 +133,13 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
+
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "https://github.com/Star-Studio-Develop/Groq2API", http.StatusFound)
+}
+
 func main() {
+	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/v1/chat/completions", chatCompletionsHandler)
 
 	fmt.Println("Server is listening on :8080")
