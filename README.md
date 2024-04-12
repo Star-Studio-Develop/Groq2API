@@ -8,6 +8,10 @@ docker run -d -p 8080:8080  ghcr.io/star-studio-develop/groq2api:latest
 
 ```
 
+### Render部署
+[![Deploy](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
+
 ## Usage
 
 可选参数列表
