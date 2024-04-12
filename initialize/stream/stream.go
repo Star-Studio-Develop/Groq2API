@@ -1,12 +1,11 @@
 package stream
 
 import (
+	"Groq2API/initialize/model"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"Groq2API/initialize/model"
 )
 
 // FetchStream 异步获取数据流
