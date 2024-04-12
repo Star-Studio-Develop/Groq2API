@@ -5,6 +5,7 @@ import (
 	"Groq2API/initialize/model"
 	"Groq2API/initialize/stream"
 	"Groq2API/initialize/user"
+	"Groq2API/initialize/utils"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -20,6 +21,13 @@ type ChatCompletionRequest struct {
 }
 
 func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		utils.SetCorsHeaders(w)
+		// Respond with 204 No Content status code
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
 	if r.Method != "POST" {
 		http.Error(w, "Only POST method is allowed", http.StatusMethodNotAllowed)
 		return
@@ -68,6 +76,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Transfer-Encoding", "chunked")
 	w.Header().Set("X-Accel-Buffering", "no")
+	utils.SetCorsHeaders(w)
 	//w.WriteHeader(http.StatusOK)
 	buf := make([]byte, 4*1024)
 
