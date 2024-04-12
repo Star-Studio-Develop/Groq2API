@@ -9,13 +9,13 @@ import (
 )
 
 // FetchStream 异步获取数据流
-func FetchStream(jwt string, orgID string, messages []model.Message, modelType string) (*http.Response, error) {
+func FetchStream(jwt string, orgID string, messages []model.Message, modelType string, maxTokens int64) (*http.Response, error) {
 	url := "https://api.groq.com/openai/v1/chat/completions"
 	payload := map[string]interface{}{
 		"model":       modelType,
 		"messages":    messages,
 		"temperature": 0.2,
-		"max_tokens":  2048,
+		"max_tokens":  maxTokens,
 		"top_p":       0.8,
 		"stream":      true,
 	}

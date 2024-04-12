@@ -20,6 +20,7 @@ type ChatCompletionRequest struct {
 	Messages  []model.Message `json:"messages"`
 	ModelType string          `json:"model"`
 	Stream    bool            `json:"stream"`
+	MaxTokens int64           `json:"max_tokens"`
 }
 
 func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
@@ -68,7 +69,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 	var response *http.Response
 	if req.Stream {
 		// while use stream
-		response, err = stream.FetchStream(jwt, orgID, req.Messages, req.ModelType) // Make sure to adjust the FetchStream function to return the response instead of printing it.
+		response, err = stream.FetchStream(jwt, orgID, req.Messages, req.ModelType, req.MaxTokens) // Make sure to adjust the FetchStream function to return the response instead of printing it.
 		if err != nil {
 			log.Printf("Error fetching stream: %v", err)
 			http.Error(w, "Failed to fetch stream", http.StatusInternalServerError)
@@ -82,7 +83,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 			"model":       req.ModelType,
 			"messages":    req.Messages,
 			"temperature": 0.2,
-			"max_tokens":  2048,
+			"max_tokens":  req.MaxTokens,
 			"top_p":       0.8,
 			"stream":      false,
 		}
@@ -106,6 +107,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Connection", "keep-alive")
 	w.Header().Set("Transfer-Encoding", "chunked")
 	w.Header().Set("X-Accel-Buffering", "no")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	utils.SetCorsHeaders(w)
 	//w.WriteHeader(http.StatusOK)
 	buf := make([]byte, 4*1024)
