@@ -8,9 +8,8 @@ import (
 	"Groq2API/initialize/utils"
 	"bytes"
 	"encoding/json"
-	"fmt"
+	"github.com/rs/zerolog/log"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -55,23 +54,23 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 
 	jwt, err := auth.FetchJWT(splitRes[1])
 	if err != nil {
-		log.Printf("Error fetching JWT: %v", err)
+		log.Error().Err(err).Msg("Error fetching JWT: ")
 		http.Error(w, "Failed to fetch JWT", http.StatusInternalServerError)
 		return
 	}
 
 	orgID, err := user.FetchUserProfile(jwt)
 	if err != nil {
-		log.Printf("Error fetching user profile: %v", err)
+		log.Error().Err(err).Msg("Error fetching user profile: ")
 		http.Error(w, "Failed to fetch user profile", http.StatusInternalServerError)
 		return
 	}
 	var response *http.Response
 	if req.Stream {
 		// while use stream
-		response, err = stream.FetchStream(jwt, orgID, req.Messages, req.ModelType, req.MaxTokens) // Make sure to adjust the FetchStream function to return the response instead of printing it.
+		response, err = stream.FetchStream(jwt, orgID, req.Messages, req.ModelType, req.MaxTokens) // Make sure to adjust the FetchStream function to return the response
 		if err != nil {
-			log.Printf("Error fetching stream: %v", err)
+			log.Error().Err(err).Msg("Error fetching stream: ")
 			http.Error(w, "Failed to fetch stream", http.StatusInternalServerError)
 			return
 		}
@@ -90,7 +89,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		body, _ := json.Marshal(payload)
 		req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(body))
 		if err != nil {
-			fmt.Println("Error creating request:", err)
+			log.Error().Err(err).Msg("Error creating request: ")
 			return
 		}
 		req.Header.Set("Authorization", "Bearer "+jwt)
@@ -99,7 +98,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 		client := &http.Client{}
 		response, err = client.Do(req)
 		if err != nil {
-			fmt.Println("Error sending request:", err)
+			log.Error().Err(err).Msg("Error sending request: ")
 			return
 		}
 	}
@@ -122,7 +121,7 @@ func chatCompletionsHandler(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 				err := response.Body.Close()
 				if err != nil {
-					log.Printf("Error close response: %v", err)
+					log.Error().Err(err).Msg("Failed to close response")
 					http.Error(w, "Failed to close response", http.StatusInternalServerError)
 					return
 				}
@@ -141,8 +140,8 @@ func main() {
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/v1/chat/completions", chatCompletionsHandler)
 
-	fmt.Println("Server is listening on :8080")
+	log.Info().Msg("Server is listening on :8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
+		log.Fatal().Err(err).Msg("Failed to start server")
 	}
 }
