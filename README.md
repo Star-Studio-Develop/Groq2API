@@ -11,6 +11,8 @@ docker run -d -p 8080:8080  ghcr.io/star-studio-develop/groq2api:latest
 ### Render部署
 [![Deploy](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
+### Koyeb部署
+[![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?type=docker&name=groq2api&ports=8080;http;/&image=ghcr.io/star-studio-develop/groq2api)
 
 ## Usage
 
