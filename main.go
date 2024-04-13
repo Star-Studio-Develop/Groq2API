@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"io"
+
 	"github.com/Star-Studio-Develop/Groq2API/initialize/auth"
 	"github.com/Star-Studio-Develop/Groq2API/initialize/model"
 	"github.com/Star-Studio-Develop/Groq2API/initialize/stream"
@@ -10,8 +12,9 @@ import (
 	"github.com/Star-Studio-Develop/Groq2API/initialize/utils"
 	"github.com/patrickmn/go-cache"
 	"github.com/rs/zerolog/log"
-	"io"
+
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -154,16 +157,20 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	// Create a cache with a default expiration time of 4 minutes, and which
-	// purges expired items every 1 minutes
 	c := cache.New(4*time.Minute, 1*time.Minute)
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/v1/chat/completions", func(w http.ResponseWriter, r *http.Request) {
 		chatCompletionsHandler(w, r, c)
 	})
 
-	log.Info().Msg("Server is listening on :8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+	// Retrieve port from environment variable or default to 8080
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Info().Msgf("Server is listening on :%s", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal().Err(err).Msg("Failed to start server")
 	}
 }
