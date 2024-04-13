@@ -15,7 +15,7 @@ docker run -d -p 8080:8080 ghcr.io/star-studio-develop/groq2api:latest
 [![Deploy](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
 ### Railway部署
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/3OjVCJ?referralCode=mHTBVp)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/kaB56J)
 
 ## Usage
 
