@@ -1,6 +1,0 @@
-services:
-  - type: web
-    name: Groq2API
-    env: docker
-    dockerfilePath: ./Dockerfile
-    plan: free

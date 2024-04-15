@@ -8,6 +8,8 @@ docker run -d -p 8080:8080 ghcr.io/star-studio-develop/groq2api:latest
 
 ```
 
+### 
+
 ### Koyeb部署
 [![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?type=docker&name=groq2api&ports=8080;http;/&image=ghcr.io/star-studio-develop/groq2api)
 
@@ -54,6 +56,4 @@ curl --request POST \
 }'
 
 ```
-
-![image](https://github.com/Star-Studio-Develop/Groq2API/assets/148524140/adedf992-864a-47b1-9201-d53717befd4a)
-
+F12中获取stytch_session的值
