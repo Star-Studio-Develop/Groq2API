@@ -11,7 +11,7 @@ func InitConfig() {
 	_ = godotenv.Load(".env")
 	global.Host = os.Getenv("SERVER_HOST")
 	if global.Host == "" {
-		global.Host = "127.0.0.1"
+		global.Host = "0.0.0.0"
 	}
 	global.Port = os.Getenv("SERVER_PORT")
 	if global.Port == "" {
