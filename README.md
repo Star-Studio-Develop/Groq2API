@@ -43,7 +43,7 @@ docker run -d -p 8080:8080 ghcr.io/star-studio-develop/groq2api:latest
 
 curl --request POST \
   --url http://127.0.0.1:8080/v1/chat/completions \
-  --header 'Authorization: Bearer change-it-to-your-refresh-token' \
+  --header 'Authorization: Bearer stytch_session' \
   --data '{
   "messages": [
     {
@@ -57,4 +57,6 @@ curl --request POST \
 }'
 
 ```
-F12中获取stytch_session的值
+
+### stytch_session 获取方法
+![image|690x233](https://cdn.linux.do/uploads/default/original/3X/c/c/cc5bb06024b2fc93581227e16b5a5e3e220d159c.png)
