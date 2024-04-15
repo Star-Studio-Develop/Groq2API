@@ -12,14 +12,12 @@ func InitRouter() *gin.Engine {
 	Router.Use(middlewares.Cors)
 
 	Router.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "Hello, world!",
-		})
+		c.Redirect(http.StatusMovedPermanently, "https://github.com/Star-Studio-Develop/Groq2API")
 	})
 
 	Router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "pong",
+			"message": "(｡•ˇ‸ˇ•｡)哼！都怪你\n(`ȏ´) 也不哄哄人家\n(〃′o`)人家超想哭的，捶你胸口，大坏蛋！！！\n(｡•ˇ‸ˇ•｡)哼！都怪你\n(`ȏ´)也不哄哄人家\n(〃′o`)人家超想哭的，捶你胸口，大坏蛋！！！\n(￣^￣)ゞ咩QAQ捶你胸口你好讨厌！\n(￣^￣)ゞ咩QAQ捶你胸口你好讨厌！\n(=ﾟωﾟ)ﾉ要抱抱嘤嘤嘤哼，要抱抱嘤嘤嘤哼，人家拿小拳拳捶你胸口！！！\n(=ﾟωﾟ)ﾉ要抱抱嘤嘤嘤哼，要抱抱嘤嘤嘤哼，人家拿小拳拳捶你胸口！！！\n(｡• ︿•̀｡)大坏蛋，打死你(つд⊂)",
 		})
 	})
 	v1Group := Router.Group("/v1/")
