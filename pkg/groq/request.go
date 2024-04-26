@@ -28,7 +28,7 @@ func baseHeader() http.Header {
 	return header
 }
 func GerOrganizationId(client tls_client.HttpClient, api_key string, proxy string) (string, error) {
-	//header := baseHeader()
+	header := baseHeader()
 
 	//req := client.Get()
 	//header = client.Head()
@@ -37,47 +37,8 @@ func GerOrganizationId(client tls_client.HttpClient, api_key string, proxy strin
 		client.SetProxy(proxy)
 	}
 	req, err := http.NewRequest(http.MethodGet, "https://api.groq.com/platform/v1/user/profile", nil)
-	req.Header = http.Header{
-		"accept":          {"*/*"},
-		"accept-language": {"zh-CN,zh;q=0.9,en;q=0.8,zh-TW;q=0.7"},
-		"authorization": {
-			"Bearer " + api_key,
-		},
-		"cache-control":      {"no-cache"},
-		"dnt":                {"1"},
-		"origin":             {"https://console.groq.com"},
-		"pragma":             {"no-cache"},
-		"priority":           {"u=1, i"},
-		"referer":            {"https://console.groq.com/settings/organization"},
-		"rsc":                {"1"},
-		"sec-ch-ua":          {"\"Chromium\";v=\"124\", \"Google Chrome\";v=\"124\", \"Not-A.Brand\";v=\"99\""},
-		"sec-ch-ua-mobile":   {"?0"},
-		"sec-ch-ua-platform": {"\"macOS\""},
-		"sec-fetch-dest":     {"empty"},
-		"sec-fetch-mode":     {"cors"},
-		"sec-fetch-site":     {"same-site"},
-		"user-agent":         {"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"},
-
-		http.HeaderOrderKey: {
-			"accept",
-			"accept-language",
-			"authorization",
-			"cache-control",
-			"dnt",
-			"origin",
-			"pragma",
-			"priority",
-			"referer",
-			"rsc",
-			"sec-ch-ua",
-			"sec-ch-ua-mobile",
-			"sec-ch-ua-platform",
-			"sec-fetch-dest",
-			"sec-fetch-mode",
-			"sec-fetch-site",
-			"user-agent",
-		},
-	}
+	header.Set("authorization", "Bearer "+api_key)
+	req.Header = header
 	if err != nil {
 		return "", err
 	}
