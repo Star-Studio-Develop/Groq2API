@@ -15,21 +15,17 @@ type ResponseWriterWrapper struct {
 	gin.ResponseWriter
 }
 
+// Header
+// to fix error:
+// Cannot use &ResponseWriterWrapper{w} (type *ResponseWriterWrapper) as the type http.ResponseWriter Type
+// does not implement http.ResponseWriter as some methods are missing: Header() Header
 func (rw *ResponseWriterWrapper) Header() http.Header {
 	return http.Header(rw.ResponseWriter.Header())
 }
 
-func (rw *ResponseWriterWrapper) Write(b []byte) (int, error) {
-	return rw.ResponseWriter.Write(b)
-}
-
-func (rw *ResponseWriterWrapper) WriteHeader(statusCode int) {
-	rw.ResponseWriter.WriteHeader(statusCode)
-}
-
 func NewReadWriter(w gin.ResponseWriter, r *http.Response) *ReadWriter {
 	return &ReadWriter{
-		//gin.ResponseWriter does not implement "github.com/bogdanfinn/fhttp".ResponseWriter
+
 		w: &ResponseWriterWrapper{w},
 		r: r,
 	}
