@@ -3,7 +3,7 @@ package groq
 import (
 	tls_client "github.com/bogdanfinn/tls-client"
 	"github.com/bogdanfinn/tls-client/profiles"
-	"log"
+	"log/slog"
 )
 
 type BasicClient struct {
@@ -20,7 +20,7 @@ func NewBasicClient() tls_client.HttpClient {
 	}
 	client, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), options...)
 	if err != nil {
-		log.Println(err)
+		slog.Error("err while init tls client", err)
 	}
 	return client
 }
