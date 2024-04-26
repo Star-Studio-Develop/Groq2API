@@ -2,17 +2,20 @@ package router
 
 import (
 	"encoding/json"
-	"github.com/gin-gonic/gin"
-	groq "github.com/learnLi/groq_client"
 	"groqai2api/global"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	groq "github.com/learnLi/groq_client"
 )
 
 func authSessionHandler(client groq.HTTPClient, account *groq.Account, api_key string, proxy string) error {
 	organization, err := groq.GerOrganizationId(client, api_key, proxy)
 	if err != nil {
+		slog.Error("Failed to get organization id", "err", err)
 		return err
 	}
 	account.Organization = organization
@@ -57,6 +60,7 @@ func chat(c *gin.Context) {
 				account = groq.NewAccount("", "")
 				err := authSessionHandler(client, account, customToken, "")
 				if err != nil {
+					slog.Error("session_token is invalid", err)
 					c.JSON(400, gin.H{"error": err.Error()})
 					c.Abort()
 					return
