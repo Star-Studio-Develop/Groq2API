@@ -11,7 +11,6 @@ type BasicClient struct {
 }
 
 func NewBasicClient() tls_client.HttpClient {
-	//jar := tls_client.NewCookieJar()
 	jar := tls_client.NewCookieJar()
 	options := []tls_client.HttpClientOption{
 		tls_client.WithTimeoutSeconds(30),
