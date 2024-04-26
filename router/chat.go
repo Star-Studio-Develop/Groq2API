@@ -2,7 +2,9 @@ package router
 
 import (
 	"encoding/json"
+	tls_client "github.com/bogdanfinn/tls-client"
 	"groqai2api/global"
+	groqHttp "groqai2api/pkg/groq"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -12,8 +14,8 @@ import (
 	groq "github.com/learnLi/groq_client"
 )
 
-func authSessionHandler(client groq.HTTPClient, account *groq.Account, api_key string, proxy string) error {
-	organization, err := groq.GerOrganizationId(client, api_key, proxy)
+func authSessionHandler(client tls_client.HttpClient, account *groq.Account, api_key string, proxy string) error {
+	organization, err := groqHttp.GerOrganizationId(client, api_key, proxy)
 	if err != nil {
 		slog.Error("Failed to get organization id", "err", err)
 		return err
@@ -23,13 +25,15 @@ func authSessionHandler(client groq.HTTPClient, account *groq.Account, api_key s
 	return nil
 }
 
-func authRefreshHandler(client groq.HTTPClient, account *groq.Account, api_key string, proxy string) error {
-	token, err := groq.GetSessionToken(client, api_key, "")
+func authRefreshHandler(client tls_client.HttpClient, account *groq.Account, api_key string, proxy string) error {
+	token, err := groqHttp.GetSessionToken(client, api_key, "")
 	if err != nil {
+		slog.Error("Failed to get session token", "err", err)
 		return err
 	}
-	organization, err := groq.GerOrganizationId(client, token.Data.SessionJwt, proxy)
+	organization, err := groqHttp.GerOrganizationId(client, token.Data.SessionJwt, proxy)
 	if err != nil {
+		slog.Error("Failed to get organization id", "err", err)
 		return err
 	}
 	account.Organization = organization
@@ -44,7 +48,7 @@ func chat(c *gin.Context) {
 			"error": err.Error(),
 		})
 	}
-	client := groq.NewBasicClient()
+	client := groqHttp.NewBasicClient()
 	proxyUrl := global.ProxyPool.GetProxyIP()
 	if proxyUrl != "" {
 		client.SetProxy(proxyUrl)
@@ -70,6 +74,7 @@ func chat(c *gin.Context) {
 				account = groq.NewAccount(customToken, "")
 				err := authRefreshHandler(client, account, customToken, "")
 				if err != nil {
+					slog.Error("customToken is invalid", err)
 					c.JSON(400, gin.H{"error": err.Error()})
 					c.Abort()
 					return
@@ -89,13 +94,14 @@ func chat(c *gin.Context) {
 	if _, ok := global.Cache.Get(account.Organization); !ok {
 		err := authRefreshHandler(client, account, account.SessionToken, "")
 		if err != nil {
+			slog.Error("get refresh err", err)
 			c.JSON(400, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
 	}
 	api_key, _ := global.Cache.Get(account.Organization)
-	response, err := groq.ChatCompletions(client, api_req, api_key.(string), account.Organization, "")
+	response, err := groqHttp.ChatCompletions(client, api_req, api_key.(string), account.Organization, "")
 	if err != nil {
 		c.JSON(500, gin.H{
 			"error": err.Error(),
@@ -104,11 +110,11 @@ func chat(c *gin.Context) {
 		return
 	}
 	defer response.Body.Close()
-	groq.NewReadWriter(c.Writer, response).StreamHandler()
+	groqHttp.NewReadWriter(c.Writer, response).StreamHandler()
 }
 
 func models(c *gin.Context) {
-	client := groq.NewBasicClient()
+	client := groqHttp.NewBasicClient()
 	proxyUrl := global.ProxyPool.GetProxyIP()
 	if proxyUrl != "" {
 		client.SetProxy(proxyUrl)
@@ -149,7 +155,7 @@ func models(c *gin.Context) {
 		}
 	}
 	api_key, _ := global.Cache.Get(account.Organization)
-	response, err := groq.GetModels(client, api_key.(string), account.Organization, "")
+	response, err := groqHttp.GetModels(client, api_key.(string), account.Organization, "")
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
 		c.Abort()
