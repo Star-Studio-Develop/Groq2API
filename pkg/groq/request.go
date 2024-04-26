@@ -30,9 +30,6 @@ func baseHeader() http.Header {
 func GerOrganizationId(client tls_client.HttpClient, api_key string, proxy string) (string, error) {
 	header := baseHeader()
 
-	//req := client.Get()
-	//header = client.Head()
-
 	if proxy != "" {
 		client.SetProxy(proxy)
 	}
