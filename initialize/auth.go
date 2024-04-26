@@ -1,39 +1,31 @@
-package auth
+package initialize
 
 import (
-	"bytes"
-	"encoding/json"
-	"net/http"
+	"bufio"
+	groq "github.com/learnLi/groq_client"
+	"groqai2api/global"
+	"groqai2api/pkg/accountpool"
+	"os"
 )
 
-type TokenResponse struct {
-	Data struct {
-		SessionJWT string `json:"session_jwt"`
-	} `json:"data"`
-}
-
-func FetchJWT(refreshToken string) (string, error) {
-	url := "https://web.stytch.com/sdk/v1/sessions/authenticate"
-	body := bytes.NewBuffer(nil)
-	req, err := http.NewRequest(http.MethodPost, url, body)
-	if err != nil {
-		return "", err
+func InitAuth() {
+	var Secrets []*groq.Account
+	// Read accounts.txt and create a list of accounts
+	if _, err := os.Stat("session_tokens.txt"); err == nil {
+		// Each line is a proxy, put in proxies array
+		file, _ := os.Open("session_tokens.txt")
+		defer file.Close()
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			// Split by :
+			token := scanner.Text()
+			if len(token) == 0 {
+				continue
+			}
+			// Append to accounts
+			Secrets = append(Secrets, groq.NewAccount(token, ""))
+		}
 	}
 
-	req.Header.Set("Authorization", "Basic "+refreshToken)
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	var tokenResp TokenResponse
-	if err := json.NewDecoder(resp.Body).Decode(&tokenResp); err != nil {
-		return "", err
-	}
-
-	return tokenResp.Data.SessionJWT, nil
+	global.AccountPool = accountpool.NewAccounts(Secrets)
 }
