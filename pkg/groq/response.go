@@ -4,7 +4,6 @@ import (
 	http "github.com/bogdanfinn/fhttp"
 	"github.com/gin-gonic/gin"
 	"io"
-	//"net/http"
 )
 
 type ReadWriter struct {
