@@ -1,11 +1,9 @@
 package router
 
 import (
-	"bufio"
 	"encoding/json"
 	"groqai2api/global"
 	groqHttp "groqai2api/pkg/groq"
-	"io/ioutil"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -45,14 +43,12 @@ func authRefreshHandler(client tls_client.HttpClient, account *groq.Account, api
 }
 
 func chat(c *gin.Context) {
-	var apiReq groq.APIRequest
-	if err := c.ShouldBindJSON(&apiReq); err != nil {
+	var api_req groq.APIRequest
+	if err := c.ShouldBindJSON(&api_req); err != nil {
 		c.JSON(500, gin.H{
 			"error": err.Error(),
 		})
-		return
 	}
-
 	client := groqHttp.NewBasicClient()
 	proxyUrl := global.ProxyPool.GetProxyIP()
 	if proxyUrl != "" {
@@ -64,7 +60,7 @@ func chat(c *gin.Context) {
 	if authorization != "" {
 		customToken := strings.Replace(authorization, "Bearer ", "", 1)
 		if customToken != "" {
-			// Handle session token
+			// 说明传递的是session_token
 			if strings.HasPrefix(customToken, "eyJhbGciOiJSUzI1NiI") {
 				account = groq.NewAccount("", "")
 				err := authSessionHandler(client, account, customToken, "")
@@ -75,7 +71,6 @@ func chat(c *gin.Context) {
 					return
 				}
 			}
-			// Handle custom token
 			if len(customToken) == 44 {
 				account = groq.NewAccount(customToken, "")
 				err := authRefreshHandler(client, account, customToken, "")
@@ -89,15 +84,14 @@ func chat(c *gin.Context) {
 		}
 	}
 
-	// Insert Chinese prompt if needed
+	// 默认插入中文prompt
 	if global.ChinaPrompt == "true" {
 		prompt := groq.APIMessage{
 			Content: "使用中文回答，输出时不要带英文",
 			Role:    "system",
 		}
-		apiReq.Messages = append([]groq.APIMessage{prompt}, apiReq.Messages...)
+		api_req.Messages = append([]groq.APIMessage{prompt}, api_req.Messages...)
 	}
-
 	if _, ok := global.Cache.Get(account.Organization); !ok {
 		err := authRefreshHandler(client, account, account.SessionToken, "")
 		if err != nil {
@@ -107,9 +101,8 @@ func chat(c *gin.Context) {
 			return
 		}
 	}
-
-	apiKey, _ := global.Cache.Get(account.Organization)
-	response, err := groqHttp.ChatCompletions(client, apiReq, apiKey.(string), account.Organization, "")
+	api_key, _ := global.Cache.Get(account.Organization)
+	response, err := groqHttp.ChatCompletions(client, api_req, api_key.(string), account.Organization, "")
 	if err != nil {
 		c.JSON(500, gin.H{
 			"error": err.Error(),
@@ -118,35 +111,7 @@ func chat(c *gin.Context) {
 		return
 	}
 	defer response.Body.Close()
-
-	// Check if the client supports streaming
-	if strings.Contains(c.GetHeader("Accept"), "text/event-stream") {
-		// Stream the response
-		c.Header("Content-Type", "text/event-stream")
-		c.Header("Cache-Control", "no-cache")
-		c.Header("Connection", "keep-alive")
-
-		reader := bufio.NewReader(response.Body)
-		for {
-			line, err := reader.ReadBytes('\n')
-			if err != nil {
-				break
-			}
-			c.Writer.Write(line)
-			c.Writer.Flush()
-		}
-	} else {
-		// Non-streaming response
-		body, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			c.JSON(500, gin.H{
-				"error": err.Error(),
-			})
-			return
-		}
-		c.Writer.Header().Set("Content-Type", "application/json")
-		c.Writer.Write(body)
-	}
+	groqHttp.NewReadWriter(c.Writer, response).StreamHandler()
 }
 
 func models(c *gin.Context) {
