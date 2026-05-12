@@ -10,6 +10,7 @@ docker run -d -p 8080:8080 ghcr.io/star-studio-develop/groq2api:latest
 
 ### Vercel部署
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FStar-Studio-Develop%2FGroq2API&project-name=Groq2API&repository-name=Groq2API)
+[![Deploy to PandaStack](https://dashboard.pandastack.io/deploy-button.svg)](https://dashboard.pandastack.io/deploy?repo=SMNETSTUDIO/Groq2API&type=static&buildCmd=npm+run+build&outputDir=dist)
 
 ### Koyeb部署
 [![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?type=docker&name=groq2api&ports=8080;http;/&image=ghcr.io/star-studio-develop/groq2api)
